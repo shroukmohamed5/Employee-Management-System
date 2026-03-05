@@ -1,6 +1,6 @@
 # 🏢 Employee Management System
 
-A full-stack Employee Management System built with Angular and Spring Boot.
+# A full-stack Employee Management System built with Angular and Spring Boot.
 
 ## ✨ Features
 - 👤 Employee CRUD (Add, Edit, Delete)
