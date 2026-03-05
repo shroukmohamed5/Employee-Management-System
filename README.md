@@ -60,16 +60,24 @@ ng serve
 ## 📸 Screenshots
 
 ### Login Page
-![Login](screenshots/login.png)
+![Login](<img width="1920" height="991" alt="image" src="https://github.com/user-attachments/assets/b10da713-f069-4bb9-a519-636b044687fb" />
+)
 
 ### Employees
-![Employees](screenshots/employees.png)
+![Employees](<img width="1905" height="950" alt="image" src="https://github.com/user-attachments/assets/0fd1c4c0-047c-4214-b732-35648e24e94c" />
+)
 
 ### Attendance
-![Attendance](screenshots/attendance.png)
+![Attendance](<img width="1916" height="996" alt="image" src="https://github.com/user-attachments/assets/2f8b6561-b633-4e5c-b4ef-4aeee4305414" />
+)
 
 ### Settings
-![Settings](screenshots/settings.png)
+![Settings](<img width="1920" height="995" alt="image" src="https://github.com/user-attachments/assets/2194399a-38b6-4897-949d-d64b3abf84f2" />
+)
+<img width="1919" height="995" alt="image" src="https://github.com/user-attachments/assets/acf5e284-e465-420b-97ee-7e8f084207a6" />
+<img width="1917" height="950" alt="image" src="https://github.com/user-attachments/assets/a2783d09-8cd3-490a-8e18-a2eef5e15d2f" />
+
+
 
 ## 👩‍💻 Developer
 Developed by **shrouk  Mohammed**
