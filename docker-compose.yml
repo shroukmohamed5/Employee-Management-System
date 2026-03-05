@@ -1,0 +1,53 @@
+version: "3.8"
+
+services:
+
+  mysql:
+    image: mysql:8.0
+    container_name: emp-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: employeemanager
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql   # البيانات محفوظة هنا
+    networks:
+      - emp-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot123"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./employeemanager
+    container_name: emp-backend
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/employeemanager?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root123
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - emp-network
+
+  frontend:
+    build: ./employeemanagerapp
+    container_name: emp-frontend
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+    networks:
+      - emp-network
+
+volumes:
+  mysql_data:   # هذا الvolume يخلي البيانات تبقى دائمة
+
+networks:
+  emp-network:
+    driver: bridge

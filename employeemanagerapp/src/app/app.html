@@ -1,0 +1,466 @@
+<div class="layout" [class.dark]="isDark" [dir]="isArabic ? 'rtl' : 'ltr'">
+
+  <aside class="sidebar" [class.collapsed]="isCollapsed">
+    <div class="sidebar-header">
+      <div class="logo">
+        <span class="logo-icon">👥</span>
+        <span class="logo-text">{{ companyName }}</span>
+      </div>
+      <button class="toggle-btn" (click)="toggleSidebar()">
+        {{ isCollapsed ? '→' : '←' }}
+      </button>
+    </div>
+
+    <nav class="sidebar-nav">
+      <a class="nav-item" [class.active]="activeMenu === 'dashboard'" (click)="setActive('dashboard')">
+        <span class="nav-icon">📊</span><span class="nav-text">{{ t.dashboard }}</span>
+      </a>
+      <a class="nav-item" [class.active]="activeMenu === 'employees'" (click)="setActive('employees')">
+        <span class="nav-icon">👤</span><span class="nav-text">{{ t.employees }}</span>
+      </a>
+      <a class="nav-item" [class.active]="activeMenu === 'add-employee'" (click)="setActive('add-employee')">
+        <span class="nav-icon">➕</span><span class="nav-text">{{ t.addEmployee }}</span>
+      </a>
+      <a class="nav-item" [class.active]="activeMenu === 'attendance'" (click)="setActive('attendance')">
+        <span class="nav-icon">🖐️</span><span class="nav-text">{{ t.attendance }}</span>
+      </a>
+      <a class="nav-item" [class.active]="activeMenu === 'reports'" (click)="setActive('reports')">
+        <span class="nav-icon">📈</span><span class="nav-text">{{ t.reports }}</span>
+      </a>
+      <a class="nav-item" [class.active]="activeMenu === 'settings'" (click)="setActive('settings')">
+        <span class="nav-icon">⚙️</span><span class="nav-text">{{ t.settings }}</span>
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-info">
+        <span class="user-avatar">A</span>
+        <span class="user-name">Admin</span>
+      </div>
+      <button class="btn-logout" (click)="logout()" title="Logout">🚪</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <div class="top-bar">
+      <h1 class="page-title">{{ t[activeMenu] || t.employees }}</h1>
+    </div>
+
+    <!-- EMPLOYEES -->
+    <div class="cards-grid" *ngIf="activeMenu === 'employees'">
+      <div class="emp-card" *ngFor="let employee of employees">
+        <div class="emp-avatar">{{ employee.name.charAt(0) }}</div>
+        <div class="emp-info">
+          <h3>{{ employee.name }}</h3>
+          <p class="emp-title">{{ employee.jobTitle }}</p>
+          <p><strong>{{ t.email }}:</strong> {{ employee.email }}</p>
+          <p><strong>{{ t.phone }}:</strong> {{ employee.phone }}</p>
+          <p><strong>ID:</strong> {{ employee.id }}</p>
+        </div>
+        <div class="emp-actions">
+          <button class="btn-edit" (click)="openEdit(employee)">{{ t.edit }}</button>
+          <button class="btn-delete" (click)="openDelete(employee)">{{ t.delete }}</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ADD EMPLOYEE -->
+    <div class="form-page" *ngIf="activeMenu === 'add-employee'">
+      <div class="form-card">
+        <h2>➕ {{ t.addNewEmployee }}</h2>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>{{ t.fullName }} *</label>
+            <input type="text" [(ngModel)]="newEmployee.name" [placeholder]="t.fullName" [class.error]="formErrors.name" />
+            <span class="error-msg" *ngIf="formErrors.name">{{ t.fullName }} is required</span>
+          </div>
+          <div class="form-group">
+            <label>{{ t.email }} *</label>
+            <input type="email" [(ngModel)]="newEmployee.email" [placeholder]="t.email" [class.error]="formErrors.email" />
+            <span class="error-msg" *ngIf="formErrors.email">{{ t.email }} is required</span>
+          </div>
+          <div class="form-group">
+            <label>{{ t.jobTitle }} *</label>
+            <input type="text" [(ngModel)]="newEmployee.jobTitle" [placeholder]="t.jobTitle" [class.error]="formErrors.jobTitle" />
+            <span class="error-msg" *ngIf="formErrors.jobTitle">{{ t.jobTitle }} is required</span>
+          </div>
+          <div class="form-group">
+            <label>{{ t.phone }} *</label>
+            <input type="text" [(ngModel)]="newEmployee.phone" [placeholder]="t.phone" [class.error]="formErrors.phone" />
+            <span class="error-msg" *ngIf="formErrors.phone">{{ t.phone }} is required</span>
+          </div>
+          <div class="form-group">
+            <label>{{ t.imageUrl }}</label>
+            <input type="text" [(ngModel)]="newEmployee.imageUrl" [placeholder]="t.imageUrl" />
+          </div>
+          <div class="form-group">
+            <label>{{ t.fingerprintId }}</label>
+            <input type="text" [(ngModel)]="newEmployee.employeeCode" [placeholder]="t.fingerprintId" />
+          </div>
+        </div>
+        <div class="form-actions">
+          <button class="btn-cancel" (click)="setActive('employees')">{{ t.cancel }}</button>
+          <button class="btn-save" (click)="addEmployee()">{{ t.saveEmployee }}</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ATTENDANCE -->
+    <div class="attendance-page" *ngIf="activeMenu === 'attendance'">
+      <div class="att-control-card">
+        <h2>🖐️ {{ t.attendance }}</h2>
+        <p style="color:#888; font-size:13px; margin-bottom:15px;">{{ t.enterEmployeeId }}</p>
+        <div class="att-input-row">
+          <input type="number" [(ngModel)]="manualEmployeeId" [placeholder]="t.enterEmployeeId" class="att-input" />
+          <button class="btn-checkin" (click)="checkIn()">{{ t.checkIn }}</button>
+          <button class="btn-checkout" (click)="checkOut()">{{ t.checkOut }}</button>
+          <button class="btn-absent" (click)="markAbsent()">{{ t.markAbsent }}</button>
+        </div>
+        <div class="att-msg success" *ngIf="attendanceMsg && !attendanceError">✅ {{ attendanceMsg }}</div>
+        <div class="att-msg error" *ngIf="attendanceMsg && attendanceError">❌ {{ attendanceMsg }}</div>
+      </div>
+
+      <div class="att-table-card">
+        <h3>📋 {{ t.todayAttendance }}</h3>
+        <table class="att-table">
+          <thead>
+            <tr>
+              <th>{{ t.name }}</th>
+              <th>{{ t.status }}</th>
+              <th>{{ t.checkInTime }}</th>
+              <th>{{ t.checkOutTime }}</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let att of todayAttendance">
+              <td>{{ att.employeeName }}</td>
+              <td><span class="status-badge" [class.present]="att.status === 'PRESENT'" [class.absent]="att.status === 'ABSENT'">
+                {{ att.status === 'PRESENT' ? t.present : t.absent }}
+              </span></td>
+              <td>{{ att.checkIn || t.noRecord }}</td>
+              <td>{{ att.checkOut || t.noRecord }}</td>
+            </tr>
+            <tr *ngIf="todayAttendance.length === 0">
+              <td colspan="4" style="text-align:center; color:#999; padding:20px;">No attendance recorded today</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- DASHBOARD -->
+    <div class="dashboard" *ngIf="activeMenu === 'dashboard'">
+      <div class="stat-card">
+        <span class="stat-icon">👥</span>
+        <div><h3>{{ employees.length }}</h3><p>{{ t.totalEmployees }}</p></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="settings-page" *ngIf="activeMenu === 'settings'">
+      <div class="settings-grid">
+
+        <div class="settings-card">
+          <h3>🏢 {{ t.companyName }}</h3>
+          <input type="text" [(ngModel)]="companyName" [placeholder]="t.companyName" />
+          <button class="btn-save-sm" (click)="saveCompanyName()">{{ t.save }}</button>
+          <span class="success-msg" *ngIf="companyMsg">✅ {{ companyMsg }}</span>
+        </div>
+
+        <div class="settings-card">
+          <h3>🔒 {{ t.changePassword }}</h3>
+          <input type="password" [(ngModel)]="oldPassword" [placeholder]="t.currentPassword" />
+          <input type="password" [(ngModel)]="newPassword" [placeholder]="t.newPasswordLabel" />
+          <input type="password" [(ngModel)]="confirmPassword" [placeholder]="t.confirmPassword" />
+          <button class="btn-save-sm" (click)="updatePassword()">{{ t.updatePassword }}</button>
+          <span class="success-msg" *ngIf="passwordMsg && !passwordError">✅ {{ passwordMsg }}</span>
+          <span class="error-msg-set" *ngIf="passwordMsg && passwordError">❌ {{ passwordMsg }}</span>
+        </div>
+
+        <div class="settings-card">
+          <h3>🌍 {{ t.language }}</h3>
+          <select [(ngModel)]="selectedLanguage" (ngModelChange)="saveLanguage()">
+            <option value="en">English</option>
+            <option value="ar">العربية</option>
+          </select>
+        </div>
+
+        <div class="settings-card">
+          <h3>🎨 {{ t.theme }}</h3>
+          <div class="theme-toggle">
+            <span>{{ t.light }}</span>
+            <label class="switch">
+              <input type="checkbox" [(ngModel)]="isDark" (ngModelChange)="saveTheme()" />
+              <span class="slider"></span>
+            </label>
+            <span>{{ t.dark }}</span>
+          </div>
+        </div>
+
+        <div class="settings-card">
+          <h3>🖐️ {{ t.fingerprint }}</h3>
+          <input type="text" [(ngModel)]="fingerprintDevice" [placeholder]="t.deviceName" />
+          <input type="text" [(ngModel)]="fingerprintPort" [placeholder]="t.port" />
+          <button class="btn-save-sm" (click)="saveFingerprintConfig()">{{ t.saveConfig }}</button>
+          <span class="success-msg" *ngIf="fingerprintMsg">✅ {{ fingerprintMsg }}</span>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- REPORTS -->
+    <div class="coming-soon" *ngIf="activeMenu === 'reports'">
+      <h2>{{ t.reportsComingSoon }}</h2>
+    </div>
+
+  </main>
+</div>
+
+<!-- EDIT POPUP -->
+<div class="popup-overlay" *ngIf="showEditPopup" (click)="closePopup()">
+  <div class="popup-card" (click)="$event.stopPropagation()">
+    <div class="popup-header">
+      <h2>✏️ {{ t.editEmployee }}</h2>
+      <p class="popup-subtitle">{{ editEmployee.name }}</p>
+    </div>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>{{ t.fullName }} *</label>
+        <input type="text" [(ngModel)]="editEmployee.name" [class.error]="editErrors.name" />
+        <span class="error-msg" *ngIf="editErrors.name">Required</span>
+      </div>
+      <div class="form-group">
+        <label>{{ t.email }} *</label>
+        <input type="email" [(ngModel)]="editEmployee.email" [class.error]="editErrors.email" />
+        <span class="error-msg" *ngIf="editErrors.email">Required</span>
+      </div>
+      <div class="form-group">
+        <label>{{ t.jobTitle }} *</label>
+        <input type="text" [(ngModel)]="editEmployee.jobTitle" [class.error]="editErrors.jobTitle" />
+        <span class="error-msg" *ngIf="editErrors.jobTitle">Required</span>
+      </div>
+      <div class="form-group">
+        <label>{{ t.phone }} *</label>
+        <input type="text" [(ngModel)]="editEmployee.phone" [class.error]="editErrors.phone" />
+        <span class="error-msg" *ngIf="editErrors.phone">Required</span>
+      </div>
+    </div>
+    <div class="form-actions">
+      <button class="btn-cancel" (click)="closePopup()">{{ t.cancel }}</button>
+      <button class="btn-save" (click)="updateEmployee()">{{ t.save }}</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE POPUP -->
+<div class="popup-overlay" *ngIf="showDeletePopup" (click)="closePopup()">
+  <div class="popup-card small" (click)="$event.stopPropagation()">
+    <div class="delete-icon">🗑️</div>
+    <h2>{{ t.delete }}</h2>
+    <p>{{ t.deleteConfirm }} <strong>{{ employeeToDelete?.name }}</strong>? {{ t.deleteWarning }}</p>
+    <div class="form-actions center">
+      <button class="btn-cancel" (click)="closePopup()">{{ t.noCancel }}</button>
+      <button class="btn-delete-confirm" (click)="confirmDelete()">{{ t.yesDelete }}</button>
+    </div>
+  </div>
+</div>
+
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+.layout {
+  display: flex; min-height: 100vh;
+  font-family: 'Segoe UI', sans-serif;
+  background: #f0f0f5; transition: all 0.3s;
+}
+.layout.dark { background: #1a1a2e; color: #eee; }
+.layout.dark .main-content { background: #1a1a2e; }
+.layout.dark .emp-card, .layout.dark .form-card, .layout.dark .settings-card,
+.layout.dark .stat-card, .layout.dark .popup-card,
+.layout.dark .att-control-card, .layout.dark .att-table-card { background: #16213e; color: #eee; }
+.layout.dark .page-title { color: #bb86fc; }
+.layout.dark .emp-info h3 { color: #eee; }
+.layout.dark .emp-info p { color: #bbb; }
+.layout.dark .form-group label { color: #bbb; }
+.layout.dark .form-group input { background: #0f3460; border-color: #444; color: #eee; }
+.layout.dark .att-table th { background: #0f3460; color: #eee; }
+.layout.dark .att-table td { border-color: #333; color: #ddd; }
+
+.sidebar {
+  width: 250px;
+  background: linear-gradient(180deg, #4a0080, #6a0dad, #9b30ff);
+  display: flex; flex-direction: column;
+  transition: width 0.3s; overflow: hidden;
+  box-shadow: 4px 0 15px rgba(0,0,0,0.2);
+  position: sticky; top: 0; height: 100vh;
+}
+.sidebar.collapsed { width: 70px; }
+.sidebar-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 15px; border-bottom: 1px solid rgba(255,255,255,0.2);
+}
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-icon { font-size: 24px; }
+.logo-text { color: white; font-weight: bold; font-size: 15px; white-space: nowrap; }
+.collapsed .logo-text { display: none; }
+.toggle-btn {
+  background: rgba(255,255,255,0.2); border: none; color: white;
+  width: 30px; height: 30px; border-radius: 50%; cursor: pointer; flex-shrink: 0;
+}
+.sidebar-nav { flex: 1; padding: 20px 10px; display: flex; flex-direction: column; gap: 5px; }
+.nav-item {
+  display: flex; align-items: center; gap: 12px; padding: 12px 15px;
+  border-radius: 12px; color: rgba(255,255,255,0.8); cursor: pointer;
+  transition: all 0.2s; text-decoration: none; white-space: nowrap;
+}
+.nav-item:hover { background: rgba(255,255,255,0.2); color: white; }
+.nav-item.active { background: rgba(255,255,255,0.3); color: white; font-weight: bold; }
+.nav-icon { font-size: 20px; min-width: 20px; }
+.nav-text { font-size: 14px; }
+.collapsed .nav-text { display: none; }
+.sidebar-footer {
+  padding: 15px; border-top: 1px solid rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.user-info { display: flex; align-items: center; gap: 10px; }
+.user-avatar {
+  width: 35px; height: 35px; background: rgba(255,255,255,0.3);
+  border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; color: white; font-weight: bold; min-width: 35px;
+}
+.user-name { color: white; font-size: 14px; white-space: nowrap; }
+.collapsed .user-name { display: none; }
+.btn-logout {
+  background: rgba(255,255,255,0.2); border: none; color: white;
+  width: 32px; height: 32px; border-radius: 8px; cursor: pointer; flex-shrink: 0;
+}
+.btn-logout:hover { background: rgba(255,0,0,0.3); }
+
+.main-content { flex: 1; padding: 30px; overflow-y: auto; }
+.top-bar { margin-bottom: 25px; }
+.page-title { font-size: 28px; color: #4a0080; font-weight: bold; }
+
+.cards-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+.emp-card {
+  background: white; border-radius: 16px; padding: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08); transition: transform 0.2s;
+}
+.emp-card:hover { transform: translateY(-3px); }
+.emp-avatar {
+  width: 55px; height: 55px;
+  background: linear-gradient(135deg, #6a0dad, #9b30ff);
+  border-radius: 50%; display: flex; align-items: center;
+  justify-content: center; color: white; font-size: 22px; font-weight: bold; margin-bottom: 12px;
+}
+.emp-info h3 { color: #333; margin-bottom: 4px; }
+.emp-title { color: #9b30ff; font-size: 13px; margin-bottom: 10px; }
+.emp-info p { font-size: 13px; color: #666; margin-bottom: 4px; }
+.emp-actions { display: flex; gap: 10px; margin-top: 15px; }
+.btn-edit { flex: 1; padding: 8px; background: #6a0dad; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; }
+.btn-delete { flex: 1; padding: 8px; background: #ff4444; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 13px; }
+
+.form-page { display: flex; justify-content: center; }
+.form-card {
+  background: white; border-radius: 16px; padding: 30px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08); width: 100%; max-width: 700px;
+}
+.form-card h2 { color: #4a0080; margin-bottom: 25px; }
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label { font-size: 13px; color: #666; font-weight: 600; }
+.form-group input {
+  padding: 10px 14px; border: 2px solid #e0e0e0;
+  border-radius: 10px; font-size: 14px; outline: none; transition: border 0.2s;
+}
+.form-group input:focus { border-color: #6a0dad; }
+.form-group input.error { border-color: #ff4444; }
+.error-msg { color: #ff4444; font-size: 11px; }
+.form-actions { display: flex; gap: 15px; margin-top: 25px; justify-content: flex-end; }
+.form-actions.center { justify-content: center; }
+.btn-cancel { padding: 10px 25px; background: #eee; border: none; border-radius: 10px; cursor: pointer; }
+.btn-save { padding: 10px 25px; background: #6a0dad; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+.btn-delete-confirm { padding: 10px 25px; background: #ff4444; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+
+.attendance-page { display: flex; flex-direction: column; gap: 20px; }
+.att-control-card, .att-table-card {
+  background: white; border-radius: 16px; padding: 25px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+.att-control-card h2, .att-table-card h3 { color: #4a0080; margin-bottom: 15px; }
+.att-input-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.att-input {
+  padding: 10px 14px; border: 2px solid #e0e0e0; border-radius: 10px;
+  font-size: 14px; outline: none; width: 200px;
+}
+.att-input:focus { border-color: #6a0dad; }
+.btn-checkin { padding: 10px 18px; background: #4caf50; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+.btn-checkout { padding: 10px 18px; background: #ff9800; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+.btn-absent { padding: 10px 18px; background: #ff4444; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; }
+.att-msg { margin-top: 12px; padding: 10px 15px; border-radius: 10px; font-size: 13px; }
+.att-msg.success { background: #e8f5e9; color: #2e7d32; }
+.att-msg.error { background: #fff0f0; color: #ff4444; }
+.att-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+.att-table th { background: #f3e5ff; color: #4a0080; padding: 12px; text-align: left; font-size: 13px; }
+.att-table td { padding: 12px; border-bottom: 1px solid #f0f0f0; font-size: 13px; }
+.status-badge { padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+.status-badge.present { background: #e8f5e9; color: #2e7d32; }
+.status-badge.absent { background: #fff0f0; color: #ff4444; }
+
+.dashboard { display: flex; gap: 20px; flex-wrap: wrap; }
+.stat-card {
+  background: white; border-radius: 16px; padding: 25px;
+  display: flex; align-items: center; gap: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+}
+.stat-icon { font-size: 40px; }
+.stat-card h3 { font-size: 32px; color: #6a0dad; }
+.stat-card p { color: #666; font-size: 14px; }
+
+.settings-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; }
+.settings-card {
+  background: white; border-radius: 16px; padding: 25px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+  display: flex; flex-direction: column; gap: 12px;
+}
+.settings-card h3 { color: #4a0080; font-size: 16px; }
+.settings-card input, .settings-card select {
+  padding: 10px 14px; border: 2px solid #e0e0e0; border-radius: 10px; font-size: 14px; outline: none;
+}
+.settings-card input:focus, .settings-card select:focus { border-color: #6a0dad; }
+.settings-desc { color: #888; font-size: 13px; }
+.btn-save-sm { padding: 9px 20px; background: #6a0dad; color: white; border: none; border-radius: 10px; cursor: pointer; font-weight: bold; align-self: flex-start; }
+.success-msg { color: #4caf50; font-size: 12px; }
+.error-msg-set { color: #ff4444; font-size: 12px; }
+
+.theme-toggle { display: flex; align-items: center; gap: 12px; }
+.switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: #ccc; border-radius: 26px; transition: 0.3s; }
+.slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+input:checked + .slider { background: #6a0dad; }
+input:checked + .slider:before { transform: translateX(24px); }
+
+.coming-soon { display: flex; align-items: center; justify-content: center; height: 300px; color: #999; font-size: 24px; }
+
+.popup-overlay {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center;
+  z-index: 1000; backdrop-filter: blur(5px);
+}
+.popup-card {
+  background: white; border-radius: 20px; padding: 35px; width: 100%; max-width: 600px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3); animation: popIn 0.3s ease;
+}
+.popup-card.small { max-width: 420px; text-align: center; }
+.popup-header { margin-bottom: 25px; }
+.popup-header h2 { color: #4a0080; margin-bottom: 8px; }
+.popup-subtitle { color: #888; font-size: 14px; }
+.popup-card.small h2 { color: #4a0080; margin-bottom: 15px; }
+.popup-card.small p { color: #666; margin-bottom: 25px; font-size: 15px; line-height: 1.5; }
+.delete-icon { font-size: 50px; margin-bottom: 15px; }
+
+@keyframes popIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+</style>
